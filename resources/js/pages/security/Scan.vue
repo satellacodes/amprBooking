@@ -1,9 +1,9 @@
 <script setup>
 import { Head, router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5QrcodeScanType } from 'html5-qrcode';
 import { Shield } from 'lucide-vue-next';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 
 const manualCode = ref('');
 const scanner = ref(null);
@@ -12,28 +12,39 @@ const scanStatus = ref('');
 const showModal = ref(false);
 
 onMounted(() => {
-    // Config Scanner
-    const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-        showTorchButtonIfSupported: true,
-    };
+    nextTick(() => {
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            formatsToSupport: [0], // Hanya QR Code
+            facingMode: 'environment', // Kamera Belakang
+            supportedScanTypes: [
+                Html5QrcodeScanType.SCAN_TYPE_CAMERA,
+                Html5QrcodeScanType.SCAN_TYPE_FILE,
+            ],
+        };
 
-    scanner.value = new Html5QrcodeScanner('reader', config, false);
-    scanner.value.render(onScanSuccess, (err) => {});
+        // false di belakang untuk mematikan log error merah bawaan
+        scanner.value = new Html5QrcodeScanner('reader', config, false);
+
+        scanner.value.render(onScanSuccess, (errorMessage) => {
+            /* Sembunyikan error gagal baca kotak */
+        });
+    });
 });
 
 onUnmounted(() => {
     if (scanner.value) {
         try {
             scanner.value.clear();
-        } catch (e) {}
+        } catch (e) {
+            console.error('Gagal mematikan scanner', e);
+        }
     }
 });
 
 const onScanSuccess = (decodedText) => {
-    if (scanner.value) scanner.value.pause();
+    if (scanner.value) scanner.value.pause(); // Jeda kamera
     validateTicket(decodedText);
 };
 
@@ -63,7 +74,7 @@ const processCheckIn = () => {
             onSuccess: () => {
                 showModal.value = false;
                 alert('Check-In Berhasil!');
-                if (scanner.value) scanner.value.resume();
+                if (scanner.value) scanner.value.resume(); // Nyalakan kamera lagi
             },
         },
     );
@@ -72,7 +83,7 @@ const processCheckIn = () => {
 const closeModal = () => {
     showModal.value = false;
     manualCode.value = '';
-    if (scanner.value) scanner.value.resume();
+    if (scanner.value) scanner.value.resume(); // Nyalakan kamera lagi
 };
 </script>
 
@@ -80,12 +91,10 @@ const closeModal = () => {
     <Head title="Security Scanner" />
 
     <!-- BACKGROUND DESKTOP (Gelap) -->
-    <!-- Ini membungkus aplikasi agar di PC terlihat di tengah, di HP tetap full -->
     <div
         class="flex min-h-screen w-full items-center justify-center bg-gray-900 font-sans"
     >
         <!-- CONTAINER APLIKASI (Mobile Layout) -->
-        <!-- max-w-[480px] memaksa lebar maksimal setara HP -->
         <div
             class="relative flex h-[100dvh] w-full max-w-[480px] flex-col overflow-hidden bg-[#EAEFF5] text-[#1A5F7A] shadow-2xl"
         >
@@ -229,7 +238,6 @@ const closeModal = () => {
                     v-if="showModal"
                     class="fixed inset-0 z-50 flex items-center justify-center p-6"
                 >
-                    <!-- Backdrop dibatasi max-w-480px agar pas di mobile view desktop -->
                     <div
                         class="absolute inset-0 flex justify-center bg-gray-900/80 backdrop-blur-sm"
                         @click="closeModal"
@@ -378,7 +386,6 @@ const closeModal = () => {
     background-color: black;
 }
 
-/* KUNCI: Pindahkan Tombol (Dashboard) ke BAWAH (Order 2) */
 #reader__dashboard {
     order: 2;
     padding: 10px;
@@ -388,7 +395,6 @@ const closeModal = () => {
     text-align: center;
 }
 
-/* KUNCI: Video Kamera di ATAS (Order 1) */
 #reader__scan_region {
     order: 1;
     flex: 1;
@@ -405,7 +411,6 @@ const closeModal = () => {
     border-radius: 0 !important;
 }
 
-/* Styling Tombol Request Permission */
 #html5-qrcode-button-camera-permission {
     display: inline-block;
     padding: 10px 20px;
@@ -426,7 +431,6 @@ const closeModal = () => {
     background-color: #154c61;
 }
 
-/* Styling Link Scan File */
 #reader__dashboard_section_swaplink {
     display: block;
     margin-top: 5px;
@@ -444,7 +448,6 @@ const closeModal = () => {
     display: none;
 }
 
-/* Animasi */
 @keyframes scan {
     0% {
         top: 0;

@@ -57,7 +57,7 @@ const cancelBooking = (bookingId, unitName) => {
         )
     ) {
         router.post(
-            route('admin.bookings.cancel', bookingId),
+            route('admin.booking.cancel', bookingId),
             {},
             {
                 preserveScroll: true,

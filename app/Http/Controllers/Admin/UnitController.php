@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Imports\UnitsImport;
 use App\Models\Unit;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
@@ -14,17 +15,28 @@ class UnitController extends Controller
 {
     public function index(Request $request)
     {
-        // Fitur Search
-        $query = Unit::query();
-        if ($request->search) {
-            $query->where('unit_number', 'like', '%'.$request->search.'%');
-        }
+        $search = $request->search;
 
-        $units = $query->orderBy('unit_number', 'asc')->paginate(10);
+        // Ambil batas awal dan akhir minggu ini
+        $startOfWeek = Carbon::now()->startOfWeek();
+        $endOfWeek = Carbon::now()->endOfWeek();
 
-        return Inertia::render('admin/units/Index', [
+        $units = Unit::when($search, function ($query, $search) {
+            $query->where('unit_number', 'like', "%{$search}%")
+                ->orWhere('owner_name', 'like', "%{$search}%");
+        })
+            // MENGHITUNG OTOMATIS KUOTA MINGGU INI (TIDAK BISA DIMANIPULASI)
+            ->withCount(['bookings as quota_usage' => function ($query) use ($startOfWeek, $endOfWeek) {
+                $query->whereBetween('start_time', [$startOfWeek, $endOfWeek])
+                    ->whereIn('status', ['booked', 'checked_in', 'no_show']);
+            }])
+            ->orderBy('unit_number', 'asc')
+            ->paginate(10)
+            ->withQueryString();
+
+        return Inertia::render('admin/units/Index', [ // Sesuaikan path Vue kamu
             'units' => $units,
-            'filters' => $request->only(['search']),
+            'filters' => ['search' => $search],
         ]);
     }
 

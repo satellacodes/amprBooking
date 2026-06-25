@@ -118,7 +118,7 @@ const getRowNumber = (index) =>
             <!-- Add Button -->
             <button
                 @click="openAddModal"
-                class="flex items-center gap-2 rounded-[20px] bg-indigo-600 px-6 py-3 font-bold text-white shadow-lg shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-xl active:scale-95"
+                class="flex items-center gap-2 rounded-[20px] bg-[#1A5F7A] px-6 py-3 font-bold text-white shadow-lg shadow-[#1A5F7A]/30 transition-all hover:bg-[#164e63] hover:shadow-xl hover:shadow-[#1A5F7A]/40 active:scale-95"
             >
                 <svg
                     class="h-5 w-5"

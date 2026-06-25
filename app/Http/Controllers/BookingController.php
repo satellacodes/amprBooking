@@ -79,10 +79,17 @@ class BookingController extends Controller
         $isBanned = false;
         $banMessage = '';
 
-        if ($currentUnit && $currentUnit->is_banned_until && now() < $currentUnit->is_banned_until) {
-            $isBanned = true;
-            $dateEnd = Carbon::parse($currentUnit->is_banned_until)->format('d M Y');
-            $banMessage = "Unit Anda sedang disanksi hingga {$dateEnd} dikarenakan pelanggaran aturan lapangan.";
+        if ($currentUnit && $currentUnit->is_banned_until) {
+            // Cek apakah waktu saat ini SUDAH MELEWATI waktu banned
+            if (now() >= $currentUnit->is_banned_until) {
+                // AUTO-UNBAN: Hapus sanksinya di database
+                $currentUnit->update(['is_banned_until' => null]);
+            } else {
+                // Jika belum lewat, tampilkan banner merah
+                $isBanned = true;
+                $dateEnd = Carbon::parse($currentUnit->is_banned_until)->format('d M Y');
+                $banMessage = "Unit Anda sedang disanksi hingga {$dateEnd} dikarenakan pelanggaran aturan lapangan.";
+            }
         }
 
         return Inertia::render('booking/Home', [
@@ -239,6 +246,7 @@ class BookingController extends Controller
 
         // 1. Tiket AKAN DATANG
         $activeData = Booking::where('unit_id', $unitId)
+            ->where('status', '!=', 'maintenance') // <--- FILTER MAINTENANCE
             ->where('start_time', '>=', now())
             ->whereIn('status', ['booked'])
             ->orderBy('start_time', 'asc')
@@ -246,6 +254,7 @@ class BookingController extends Controller
 
         // 2. Tiket RIWAYAT
         $historyData = Booking::where('unit_id', $unitId)
+            ->where('status', '!=', 'maintenance') // <--- FILTER MAINTENANCE
             ->where(function ($q) {
                 $q->where('start_time', '<', now())
                     ->orWhereIn('status', ['checked_in', 'cancelled', 'no_show']);

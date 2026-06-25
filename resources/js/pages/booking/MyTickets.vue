@@ -1,7 +1,7 @@
 <script setup>
 import NoFoundIlustration from '@/assets/no-found.png';
 import { Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 // PROPS
 const props = defineProps({
@@ -13,6 +13,22 @@ const props = defineProps({
 // DATA HANDLER
 const activeList = props.activeTickets?.data || [];
 const historyList = props.historyTickets?.data || [];
+const searchQuery = ref('');
+
+const filteredHistory = computed(() => {
+    // Jika kolom pencarian kosong, tampilkan semua history
+    if (!searchQuery.value) return historyList;
+
+    const query = searchQuery.value.toLowerCase();
+
+    return historyList.filter((ticket) => {
+        // Cocokkan dengan format tanggal dan status yang tampil di layar
+        const dateText = formatDate(ticket.start_time).toLowerCase();
+        const statusText = getStatusBadge(ticket.status).text.toLowerCase();
+
+        return dateText.includes(query) || statusText.includes(query);
+    });
+});
 
 const activeTab = ref('active');
 const showQrModal = ref(false);
@@ -344,8 +360,63 @@ const getStatusBadge = (status) => {
 
                 <!-- TAB: HISTORY -->
                 <div v-if="activeTab === 'history'" class="space-y-4">
+                    <!-- === TAMBAHAN: KOTAK PENCARIAN (SEARCH BAR) === -->
+
+                    <div class="group relative mb-6">
+                        <!-- Icon Kaca Pembesar -->
+                        <div
+                            class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 transition-colors group-focus-within:text-[#1A5F7A]"
+                        >
+                            <svg
+                                class="h-5 w-5 text-slate-400 transition-colors group-focus-within:text-[#1A5F7A]"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                ></path>
+                            </svg>
+                        </div>
+
+                        <!-- Input Field -->
+                        <input
+                            v-model="searchQuery"
+                            type="text"
+                            class="w-full rounded-[1.5rem] border-0 bg-white py-4 pr-12 pl-12 text-sm font-bold text-[#1A5F7A] placeholder-slate-400 shadow-[0_4px_20px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 transition-all outline-none focus:ring-2 focus:ring-[#1A5F7A]"
+                            placeholder="Cari tanggal atau status..."
+                        />
+
+                        <!-- Tombol 'X' (Hanya muncul kalau ada teks yang diketik) -->
+                        <button
+                            v-if="searchQuery"
+                            @click="searchQuery = ''"
+                            class="absolute inset-y-0 right-0 flex items-center pr-5 text-slate-300 transition-colors hover:text-red-500"
+                        >
+                            <svg
+                                class="h-5 w-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"
+                                ></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- === BATAS KOTAK PENCARIAN === -->
+
+                    <!-- Empty State (Ubah historyList jadi filteredHistory) -->
                     <div
-                        v-if="historyList.length === 0"
+                        v-if="filteredHistory.length === 0"
                         class="flex flex-col items-center justify-center py-16 opacity-60"
                     >
                         <img
@@ -353,18 +424,27 @@ const getStatusBadge = (status) => {
                             class="mb-4 h-30 w-30"
                             alt="ilustration"
                         />
-                        <h3 class="text-slate-1000 text-lg font-black">
-                            No History Available
+                        <!-- Teks dinamis: jika lagi nyari tapi ga ketemu, teksnya beda -->
+                        <h3
+                            class="text-slate-1000 text-center text-lg font-black"
+                        >
+                            {{
+                                searchQuery
+                                    ? 'No Results Found'
+                                    : 'No History Available'
+                            }}
                         </h3>
                         <Link
+                            v-if="!searchQuery"
                             href="/booking"
                             class="mt-2 text-sm font-bold text-[#1A5F7A] hover:underline"
                             >Let's book a court!</Link
                         >
                     </div>
 
+                    <!-- List Tiket (Ubah historyList jadi filteredHistory) -->
                     <div
-                        v-for="ticket in historyList"
+                        v-for="ticket in filteredHistory"
                         :key="ticket.id"
                         class="group flex items-center justify-between rounded-[1.8rem] border border-transparent bg-white p-5 transition-all hover:border-slate-100 hover:shadow-md"
                     >
@@ -427,10 +507,9 @@ const getStatusBadge = (status) => {
                                             getStatusBadge(ticket.status)
                                                 .textCol
                                         "
-                                        >{{
-                                            getStatusBadge(ticket.status).text
-                                        }}</span
                                     >
+                                        {{ getStatusBadge(ticket.status).text }}
+                                    </span>
                                 </p>
                             </div>
                         </div>

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SanctionController;
 use App\Http\Controllers\Admin\UnitController;
 use App\Http\Controllers\Admin\UserController;
@@ -81,7 +82,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])
         // --- TAMBAHKAN 2 BARIS INI AGAR TIDAK 404 ---
         Route::put('/maintenance/{id}', [MaintenanceController::class, 'update'])->name('maintenance.update');
         Route::delete('/maintenance/{id}', [MaintenanceController::class, 'destroy'])->name('maintenance.destroy');
-
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     });
 
 // 5. PROFIL

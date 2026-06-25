@@ -4,6 +4,7 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const showLoginForm = ref(false);
+const showPassword = ref(false);
 
 const form = useForm({
     email: '',
@@ -173,7 +174,7 @@ const submit = () => {
                                 <input
                                     v-model="form.email"
                                     type="text"
-                                    placeholder="TWR-A-0101"
+                                    placeholder=""
                                     class="h-14 w-full rounded-[2rem] border-none bg-[#EAEFF5] px-6 font-bold text-[#1A5F7A] placeholder-slate-400 shadow-inner transition-all focus:bg-white focus:ring-2 focus:ring-[#BEF264]"
                                 />
                                 <p
@@ -184,23 +185,32 @@ const submit = () => {
                                 </p>
                             </div>
 
-                            <!-- Input Password -->
+                            <!-- Input Password / PIN -->
                             <div class="space-y-2">
                                 <label
                                     class="ml-4 text-[10px] font-bold tracking-widest text-slate-400 uppercase"
-                                    >Password</label
                                 >
+                                    Password / PIN Akses
+                                </label>
                                 <div class="relative">
+                                    <!-- FIX: type dibuat dinamis menggunakan titik dua ( :type ) -->
                                     <input
                                         v-model="form.password"
-                                        type="password"
-                                        placeholder="••••••••"
+                                        :type="
+                                            showPassword ? 'text' : 'password'
+                                        "
+                                        placeholder=""
                                         class="h-14 w-full rounded-[2rem] border-none bg-[#EAEFF5] px-6 font-bold text-[#1A5F7A] placeholder-slate-400 shadow-inner transition-all focus:bg-white focus:ring-2 focus:ring-[#BEF264]"
                                     />
+
+                                    <!-- FIX: Ikon yang bisa diklik (@click) -->
                                     <div
-                                        class="absolute top-0 right-0 flex h-14 cursor-pointer items-center pr-6 text-slate-300 hover:text-[#1A5F7A]"
+                                        @click="showPassword = !showPassword"
+                                        class="absolute top-0 right-0 flex h-14 cursor-pointer items-center pr-6 text-slate-300 transition-colors hover:text-[#1A5F7A]"
                                     >
+                                        <!-- Ikon Mata Terbuka (Muncul saat password terlihat) -->
                                         <svg
+                                            v-if="showPassword"
                                             class="h-5 w-5"
                                             fill="none"
                                             stroke="currentColor"
@@ -219,8 +229,30 @@ const submit = () => {
                                                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                             ></path>
                                         </svg>
+                                        <!-- Ikon Mata Dicoret (Muncul saat password disembunyikan) -->
+                                        <svg
+                                            v-else
+                                            class="h-5 w-5"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
+                                            ></path>
+                                        </svg>
                                     </div>
                                 </div>
+                                <!-- Tampilkan error password jika ada -->
+                                <p
+                                    v-if="form.errors.password"
+                                    class="mt-1 ml-4 text-xs font-bold text-red-500"
+                                >
+                                    {{ form.errors.password }}
+                                </p>
                             </div>
 
                             <div class="flex items-center justify-between px-4">

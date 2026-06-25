@@ -177,12 +177,18 @@ const deleteUnit = (id) =>
                                 Pemilik
                             </th>
                             <th
-                                class="px-8 py-6 text-[10px] font-black tracking-widest text-slate-400 uppercase"
+                                class="px-8 py-6 text-center text-[10px] font-black tracking-widest text-slate-400 uppercase"
                             >
                                 PIN Akses
                             </th>
+                            <!-- INI KOLOM KUOTA YANG TERLEWAT -->
                             <th
-                                class="px-8 py-6 text-[10px] font-black tracking-widest text-slate-400 uppercase"
+                                class="px-8 py-6 text-center text-[10px] font-black tracking-widest text-slate-400 uppercase"
+                            >
+                                Kuota
+                            </th>
+                            <th
+                                class="px-8 py-6 text-center text-[10px] font-black tracking-widest text-slate-400 uppercase"
                             >
                                 Status
                             </th>
@@ -264,14 +270,11 @@ const deleteUnit = (id) =>
                             <!-- PIN (Hidden for Security) -->
                             <td class="px-8 py-5">
                                 <div class="flex items-center gap-3">
-                                    <!-- Tampilkan visual dot saja karena PIN asli di-hash -->
                                     <div
                                         class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 font-mono text-sm font-bold tracking-widest text-slate-400"
                                     >
                                         ••••••
                                     </div>
-
-                                    <!-- Tombol Edit -->
                                     <button
                                         @click="openEditPin(unit)"
                                         class="group flex items-center justify-center rounded-lg p-1.5 text-slate-400 transition-all hover:bg-blue-50 hover:text-[#1A5F7A]"
@@ -294,28 +297,71 @@ const deleteUnit = (id) =>
                                 </div>
                             </td>
 
-                            <!-- STATUS -->
-                            <td class="px-8 py-5">
+                            <!-- === TAMBAHAN: ISI DATA KUOTA === -->
+                            <td class="px-8 py-5 text-center">
                                 <span
-                                    v-if="unit.is_banned_until"
-                                    class="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[10px] font-bold tracking-wide text-rose-600 uppercase"
+                                    class="text-sm font-black"
+                                    :class="
+                                        unit.quota_usage >= 2
+                                            ? 'text-rose-500'
+                                            : 'text-[#1A5F7A]'
+                                    "
                                 >
+                                    {{ unit.quota_usage }}
                                     <span
-                                        class="h-1.5 w-1.5 rounded-full bg-rose-500"
-                                    ></span>
-                                    Banned
-                                </span>
-                                <span
-                                    v-else
-                                    class="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[10px] font-bold tracking-wide text-emerald-600 uppercase"
-                                >
-                                    <span
-                                        class="h-1.5 w-1.5 rounded-full bg-emerald-500"
-                                    ></span>
-                                    Active
+                                        class="text-xs font-bold text-slate-400"
+                                        >/ 2 Jam</span
+                                    >
                                 </span>
                             </td>
+                            <!-- ================================ -->
 
+                            <!-- STATUS (DIPERBAIKI) -->
+                            <td class="px-8 py-5">
+                                <div class="flex items-center">
+                                    <!-- Jika kena Banned -->
+                                    <span
+                                        v-if="unit.is_banned_until"
+                                        class="flex flex-col items-start gap-1"
+                                    >
+                                        <span
+                                            class="inline-flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-[10px] font-bold tracking-wide text-rose-600 uppercase"
+                                        >
+                                            <span
+                                                class="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-500"
+                                            ></span>
+                                            Banned
+                                        </span>
+                                        <!-- Menampilkan tanggal batas waktu banned -->
+                                        <span
+                                            class="ml-1 text-[9px] font-bold text-slate-400"
+                                        >
+                                            s/d
+                                            {{
+                                                new Date(
+                                                    unit.is_banned_until,
+                                                ).toLocaleDateString('id-ID', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                })
+                                            }}
+                                        </span>
+                                    </span>
+
+                                    <!-- Jika Active -->
+                                    <span
+                                        v-else
+                                        class="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[10px] font-bold tracking-wide text-emerald-600 uppercase"
+                                    >
+                                        <span
+                                            class="h-1.5 w-1.5 rounded-full bg-emerald-500"
+                                        ></span>
+                                        Active
+                                    </span>
+                                </div>
+                            </td>
+                            <!-- ======================= -->
                             <!-- AKSI (Rata Tengah) -->
                             <td class="px-8 py-5">
                                 <div class="flex justify-center gap-2">
