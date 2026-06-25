@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import ProfileController from '@/actions/App/Http/Controllers/ProfileController';
 import { Form } from '@inertiajs/vue3';
 import { useTemplateRef } from 'vue';
 
@@ -29,9 +29,7 @@ const passwordInput = useTemplateRef('passwordInput');
             title="Delete account"
             description="Delete your account and all of its resources"
         />
-        <div
-            class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4"
-        >
+        <div class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4">
             <div class="relative space-y-0.5 text-red-600">
                 <p class="font-medium">Warning</p>
                 <p class="text-sm">

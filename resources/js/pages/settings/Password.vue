@@ -2,7 +2,6 @@
 import InputError from '@/components/InputError.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { edit } from '@/routes/user-password';
 import { Form, Head } from '@inertiajs/vue3';
 
 import HeadingSmall from '@/components/HeadingSmall.vue';
@@ -14,7 +13,7 @@ import { type BreadcrumbItem } from '@/types';
 const breadcrumbItems: BreadcrumbItem[] = [
     {
         title: 'Password settings',
-        href: edit().url,
+        href: route('password.update'),
     },
 ];
 </script>
@@ -30,10 +29,10 @@ const breadcrumbItems: BreadcrumbItem[] = [
                     description="Ensure your account is using a long, random password to stay secure"
                 />
 
-                <!-- FIXED FORM -->
+                <!-- FORM FIXED -->
                 <Form
                     method="put"
-                    :action="edit().url"
+                    :action="route('password.update')"
                     :options="{
                         preserveScroll: true,
                     }"
