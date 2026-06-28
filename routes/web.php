@@ -12,6 +12,16 @@ use App\Http\Controllers\ResidentProfileController;
 use App\Http\Controllers\SecurityController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/debug', function () {
+    return [
+        'secure' => request()->isSecure(),
+        'scheme' => request()->getScheme(),
+        'url' => url('/'),
+        'asset' => asset('build/assets/app-DumlMiDH.css'),
+        'headers' => request()->headers->all(),
+    ];
+});
+
 // 1. SMART ROOT ROUTE
 Route::get('/', function () {
     // 1. Cek User Admin/Security (Auth Bawaan Laravel)
